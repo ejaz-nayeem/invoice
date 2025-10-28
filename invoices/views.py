@@ -11,16 +11,12 @@ from .serializers import (
 from django.http import Http404
 from rest_framework.permissions import IsAuthenticated
 
-# --- General Invoice Management Views ---
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def invoice_list_create_view(request):
-    """
-    Lists all invoices (GET) or creates a new invoice (POST).
-    - GET: Returns simplified invoice data, ordered by creation date.
-    - POST: Requires full details (customer, items).
-    """
+    
     if request.method == 'GET':
         invoices = Invoice.objects.prefetch_related(
             Prefetch('items', queryset=Item.objects.only('product_name'))
@@ -38,12 +34,7 @@ def invoice_list_create_view(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def invoice_retrieve_update_destroy_view(request, pk):
-    """
-    Retrieves, updates, or deletes a single invoice by its primary key (ID).
-    - GET: Returns full details, including nested items.
-    - PUT: Updates the invoice (requires full data).
-    - DELETE: Deletes the invoice.
-    """
+    
     try:
         invoice = Invoice.objects.prefetch_related('items').get(pk=pk)
     except Invoice.DoesNotExist:
@@ -70,30 +61,24 @@ def invoice_retrieve_update_destroy_view(request, pk):
         invoice.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# --- "Transaction" Function (Listing all invoices) ---
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def transaction_list_view(request):
-    """
-    Lists all invoices as 'transactions', ordered by creation date.
-    Returns simplified invoice data.
-    """
+    
     invoices = Invoice.objects.prefetch_related(
         Prefetch('items', queryset=Item.objects.only('product_name'))
     ).order_by('-created_at')
     serializer = InvoiceListSerializer(invoices, many=True)
     return Response(serializer.data)
 
-# --- "Payment" Function (Listing and viewing Paid Invoices) ---
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def paid_invoice_list_view(request):
-    """
-    Lists all invoices that have been marked as 'Paid', ordered by creation date.
-    Returns simplified invoice data.
-    """
+    
     invoices = Invoice.objects.filter(is_paid=True).prefetch_related(
         Prefetch('items', queryset=Item.objects.only('product_name'))
     ).order_by('-created_at')
@@ -103,9 +88,7 @@ def paid_invoice_list_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def paid_invoice_detail_view(request, pk):
-    """
-    Retrieves full details of a single invoice, only if it is marked as 'Paid'.
-    """
+   
     try:
         invoice = Invoice.objects.prefetch_related('items').get(pk=pk, is_paid=True)
     except Invoice.DoesNotExist:
@@ -113,15 +96,12 @@ def paid_invoice_detail_view(request, pk):
     serializer = InvoiceDetailSerializer(invoice)
     return Response(serializer.data)
 
-# --- Invoice Payment View ---
+
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def invoice_mark_paid_view(request, pk):
-    """
-    Marks an existing invoice as 'Paid'.
-    Requires sending {"is_paid": true}. Cannot unmark as paid through this endpoint.
-    """
+   
     try:
         invoice = Invoice.objects.get(pk=pk)
     except Invoice.DoesNotExist:
