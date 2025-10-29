@@ -5,40 +5,115 @@
     <title>Invoices</title>
     <style>
       body {
-        font-family: Arial;
+        font-family: Arial, sans-serif;
         margin: 40px;
+        background: #f4f6f9;
+      }
+      h2 {
+        color: #007bff;
       }
       table {
         border-collapse: collapse;
         width: 100%;
         margin-top: 20px;
+        background: white;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       }
       th,
       td {
         border: 1px solid #ddd;
-        padding: 10px;
+        padding: 12px;
         text-align: left;
       }
       th {
         background: #007bff;
         color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background: #f9f9f9;
       }
       button {
-        padding: 5px 10px;
-        margin: 2px;
+        padding: 8px 16px;
+        margin: 4px;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.2s;
+        font-size: 14px;
       }
+      button:hover {
+        opacity: 0.9;
+        transform: scale(1.02);
+      }
+
+      /* NAVIGATION BUTTONS */
+      .create {
+        background: #007bff;
+      }
+      .paid {
+        background: #28a745;
+        margin-left: 10px;
+      }
+      .logout {
+        background: #dc3545;
+        margin-left: 10px;
+      }
+
+      /* ACTION BUTTONS — DARK & VISIBLE */
+      .view-btn {
+        background: #1e3a8a;
+        font-weight: bold;
+      }
+      .mark-btn {
+        background: #2d3748;
+        font-weight: bold;
+      }
+      .mark-btn:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+
       .details {
-        margin-top: 20px;
-        border: 1px solid #ccc;
-        padding: 10px;
+        margin-top: 30px;
+        border: 1px solid #007bff;
+        padding: 20px;
+        background: #f0f7ff;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .details h3 {
+        color: #007bff;
+        margin-top: 0;
+      }
+      .no-data {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px;
       }
     </style>
   </head>
   <body>
     <h2>Invoices</h2>
-    <button onclick="window.location='create_invoice.html'">
-      + Create New Invoice
-    </button>
+
+    <!-- NAVIGATION: ALL 3 BUTTONS -->
+    <div style="margin-bottom: 25px;">
+      <button class="create" onclick="window.location='/create_invoice/'">
+        + Create New Invoice
+      </button>
+      <button class="paid" onclick="window.location='/paid-invoices-list/'">
+        Paid Invoices
+      </button>
+      <button class="logout" onclick="logout()">
+        Logout
+      </button>
+    </div>
+
+    <!-- INVOICES TABLE -->
     <table id="invoiceTable">
       <thead>
         <tr>
@@ -49,78 +124,122 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody></tbody>
+      <tbody>
+        <!-- JS WILL FILL THIS -->
+      </tbody>
     </table>
 
-    <div class="details" id="invoiceDetails"></div>
+    <!-- DETAILS PANEL -->
+    <div class="details" id="invoiceDetails" style="display: none;"></div>
 
     <script>
-      //       const token = localStorage.getItem("access_token");
-      //       if (!token) window.location.href = "login.html";
+      // AUTH CHECK
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        window.location.href = "/login/";
+      }
 
-      //       async function loadInvoices() {
-      //         const res = await fetch("http://localhost:8000/invoices/", {
-      //           headers: { Authorization: "Bearer " + token },
-      //         });
-      //         const data = await res.json();
-      //         const tbody = document.querySelector("#invoiceTable tbody");
-      //         tbody.innerHTML = "";
-      //         data.forEach((inv) => {
-      //           const row = document.createElement("tr");
-      //           row.innerHTML = `
-      //       <td>${inv.id}</td>
-      //       <td>${inv.customer_name}</td>
-      //       <td>${inv.status}</td>
-      //       <td>${inv.sub_total}</td>
-      //       <td>
-      //         <button onclick="viewInvoice(${inv.id})">View</button>
-      //         <button onclick="markAsPaid(${inv.id})" ${
-      //             inv.status === "Paid" ? "disabled" : ""
-      //           }>Mark Paid</button>
-      //       </td>
-      //     `;
-      //           tbody.appendChild(row);
-      //         });
-      //       }
+      // LOAD INVOICES
+      async function loadInvoices() {
+        const res = await fetch("/invoices/", {
+          headers: { Authorization: "Bearer " + token },
+        });
 
-      //       async function viewInvoice(id) {
-      //         const res = await fetch(`http://localhost:8000/invoices/${id}/`, {
-      //           headers: { Authorization: "Bearer " + token },
-      //         });
-      //         const data = await res.json();
-      //         const details = document.getElementById("invoiceDetails");
-      //         details.innerHTML = `
-      //     <h3>Invoice #${data.id}</h3>
-      //     <p><b>Customer:</b> ${data.customer_name} (${data.customer_phone})</p>
-      //     <p><b>Status:</b> ${data.status}</p>
-      //     <p><b>Total:</b> ${data.sub_total}</p>
-      //     <h4>Items:</h4>
-      //     <ul>${data.items
-      //       .map(
-      //         (i) =>
-      //           `<li>${i.product_name} - ${i.quantity} x ${i.amount} = ${i.total_amount}</li>`
-      //       )
-      //       .join("")}</ul>
-      //   `;
-      //       }
+        if (!res.ok) {
+          alert("Failed to load invoices. Please login again.");
+          window.location.href = "/login/";
+          return;
+        }
 
-      //       async function markAsPaid(id) {
-      //         const res = await fetch(`http://localhost:8000/invoices/${id}/pay/`, {
-      //           method: "PATCH",
-      //           headers: {
-      //             Authorization: "Bearer " + token,
-      //             "Content-Type": "application/json",
-      //           },
-      //         });
-      //         if (res.ok) {
-      //           alert("Invoice marked as paid!");
-      //           loadInvoices();
-      //         } else {
-      //           alert("Failed to mark as paid.");
-      //         }
-      //       }
+        const data = await res.json();
+        const tbody = document.querySelector("#invoiceTable tbody");
+        tbody.innerHTML = "";
 
-      //       loadInvoices();
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="no-data">No invoices yet.</td></tr>`;
+          return;
+        }
+
+        data.forEach((inv) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>#${inv.id}</td>
+            <td>${inv.customer_name}</td>
+            <td><strong>${inv.status}</strong></td>
+            <td>$${inv.sub_total}</td>
+            <td>
+              <button class="view-btn" onclick="viewInvoice(${inv.id})">View</button>
+              <button class="mark-btn" onclick="markAsPaid(${inv.id})" ${
+                inv.status === "Paid" ? "disabled" : ""
+              }>Mark Paid</button>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // VIEW INVOICE
+      async function viewInvoice(id) {
+        const res = await fetch(`/invoices/${id}/`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!res.ok) {
+          alert("Failed to load details.");
+          return;
+        }
+
+        const data = await res.json();
+        const details = document.getElementById("invoiceDetails");
+        details.style.display = "block";
+        details.innerHTML = `
+          <h3>Invoice #${data.id}</h3>
+          <p><strong>Customer:</strong> ${data.customer_name} (${data.customer_phone})</p>
+          <p><strong>Status:</strong> ${data.status}</p>
+          <p><strong>Total:</strong> $${data.sub_total}</p>
+          <h4>Items:</h4>
+          <ul>
+            ${data.items
+              .map(
+                (i) =>
+                  `<li><strong>${i.product_name}</strong> — ${i.quantity} × $${i.amount} = $${i.total_amount}</li>`
+              )
+              .join("")}
+          </ul>
+          <button onclick="this.parentElement.style.display='none'" style="background: #6c757d; margin-top: 15px; padding: 6px 12px;">
+            Close
+          </button>
+        `;
+      }
+
+      // MARK AS PAID
+      async function markAsPaid(id) {
+        const res = await fetch(`/invoices/${id}/pay/`, {
+          method: "PATCH",
+          headers: {
+            Authorization: "Bearer " + token,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ is_paid: true }),
+        });
+
+        if (res.ok) {
+          alert("Invoice marked as paid!");
+          loadInvoices();
+        } else {
+          const err = await res.json();
+          alert("Failed: " + JSON.stringify(err));
+        }
+      }
+
+      // LOGOUT
+      function logout() {
+        localStorage.removeItem("access_token");
+        window.location.href = "/login/";
+      }
+
+      // LOAD ON PAGE OPEN
+      loadInvoices();
     </script>
   </body>
 </html>

@@ -11,5 +11,8 @@ urlpatterns = [
     path('login/', TemplateView.as_view(template_name='login.html'), name='login'),
     path('create_invoice/', TemplateView.as_view(template_name='create_invoice.html'), name='create'),
     path('invoice_list/', TemplateView.as_view(template_name='invoices.html'), name='invoices'),
+    #path('paid_invoices/', TemplateView.as_view(template_name='paid_invoices.html'), name='paid_invoices'),
+    path('paid-invoices-list/', TemplateView.as_view(template_name='paid_invoices.html'), name='paid_invoices_html'),
 ]
+
 

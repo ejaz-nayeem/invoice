@@ -45,30 +45,30 @@
       <button type="submit">Login</button>
     </form>
 
-    <script>
-      document
-          .getElementById("loginForm")
-          .addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+ <script>
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-            const response = await fetch("http://localhost:8000/api/token/", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username, password }),
-            });
+    const response = await fetch("/api/token/", {  // ← RELATIVE URL
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-            const data = await response.json();
-            console.log(data)
-            // if (response.ok) {
-            //   localStorage.setItem("access_token", data.access);
-            //   alert("Login successful!");
-            //   window.location.href = "invoices.html";
-            // } else {
-            //   alert("Login failed: " + (data.detail || "Invalid credentials"));
-            // }
-          });
-    </script>
+    const data = await response.json();
+    console.log("Response:", data);  // ← DEBUG
+
+    if (response.ok) {
+      localStorage.setItem("access_token", data.access);
+      alert("Login successful!");
+      window.location.href = "/create_invoice/";  // ← CORRECT
+    } else {
+      alert("Login failed: " + (data.detail || JSON.stringify(data)));
+    }
+  });
+</script>
+    
   </body>
 </html>

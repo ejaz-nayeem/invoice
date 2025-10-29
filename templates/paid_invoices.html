@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Paid Invoices</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 40px; background: #f4f6f9; }
+      h2 { color: #28a745; }
+      table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+      th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+      th { background: #28a745; color: white; font-weight: bold; }
+      tr:nth-child(even) { background: #f9f9f9; }
+      button { padding: 8px 16px; margin: 4px; border: none; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+      button:hover { opacity: 0.9; transform: scale(1.02); }
+      .back   { background: #6c757d; }
+      .create { background: #007bff; }
+      .logout { background: #dc3545; }
+      .view   { background: #17a2b8; }
+      .details { margin-top: 30px; border: 1px solid #28a745; padding: 20px; background: #f8fff9; border-radius: 6px; }
+      .no-data { text-align: center; color: #666; font-style: italic; padding: 20px; }
+    </style>
+  </head>
+  <body>
+    <h2>Paid Invoices</h2>
+
+    <div style="margin-bottom: 25px;">
+      <button class="back" onclick="window.location='/invoice_list/'">All Invoices</button>
+      <button class="create" onclick="window.location='/create_invoice/'">Create New</button>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+
+    <table id="invoiceTable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Customer</th>
+          <th>Total</th>
+          <th>Paid At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="details" id="invoiceDetails" style="display: none;"></div>
+
+    <script>
+      const token = localStorage.getItem("access_token");
+      if (!token) window.location.href = "/login/";
+
+      async function loadPaidInvoices() {
+        const res = await fetch("/paid-invoices/", {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert("Session expired. Please login again.");
+            window.location.href = "/login/";
+          } else {
+            alert("Failed to load paid invoices.");
+          }
+          return;
+        }
+
+        const data = await res.json();
+        const tbody = document.querySelector("#invoiceTable tbody");
+        tbody.innerHTML = "";
+
+        if (data.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5" class="no-data">No paid invoices yet.</td></tr>`;
+          return;
+        }
+
+        data.forEach((inv) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>#${inv.id}</td>
+            <td>${inv.customer_name}</td>
+            <td>$${inv.sub_total}</td>
+            <td>${inv.paid_at ? new Date(inv.paid_at).toLocaleString() : '—'}</td>
+            <td><button class="view" onclick="viewInvoice(${inv.id})">View</button></td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      async function viewInvoice(id) {
+        const res = await fetch(`/invoices/${id}/`, {
+          headers: { Authorization: "Bearer " + token },
+        });
+
+        if (!res.ok) {
+          alert("Failed to load invoice details.");
+          return;
+        }
+
+        const data = await res.json();
+        const details = document.getElementById("invoiceDetails");
+        details.style.display = "block";
+        details.innerHTML = `
+          <h3>Invoice #${data.id} <small style="color: #28a745;">(PAID)</small></h3>
+          <p><strong>Customer:</strong> ${data.customer_name} (${data.customer_phone})</p>
+          <p><strong>Paid At:</strong> ${data.paid_at ? new Date(data.paid_at).toLocaleString() : '—'}</p>
+          <p><strong>Total:</strong> $${data.sub_total}</p>
+          <h4>Items:</h4>
+          <ul>
+            ${data.items.map(i => 
+              `<li><strong>${i.product_name}</strong> — ${i.quantity} × $${i.amount} = $${i.total_amount}</li>`
+            ).join("")}
+          </ul>
+          <button onclick="this.parentElement.style.display='none'" style="background: #6c757d; margin-top: 10px;">
+            Close
+          </button>
+        `;
+      }
+
+      function logout() {
+        localStorage.removeItem("access_token");
+        window.location.href = "/login/";
+      }
+
+      loadPaidInvoices();
+    </script>
+  </body>
+</html>
