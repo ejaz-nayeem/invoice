@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Create Invoice</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+      }
+      input,
+      button {
+        margin: 5px 0;
+        padding: 8px;
+        width: 100%;
+      }
+      .item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      button.add {
+        background: #28a745;
+        color: white;
+        border: none;
+      }
+      button.submit {
+        background: #007bff;
+        color: white;
+        border: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Create New Invoice</h2>
+
+    <form id="invoiceForm">
+      <input
+        type="text"
+        id="customer_name"
+        placeholder="Customer Name"
+        required
+      /><br />
+      <input
+        type="text"
+        id="customer_phone"
+        placeholder="Customer Phone"
+        required
+      /><br />
+
+      <div id="items"></div>
+      <button type="button" class="add" onclick="addItem()">+ Add Item</button
+      ><br />
+      <button type="submit" class="submit">Create Invoice</button>
+    </form>
+
+    <script>
+      //     const token = localStorage.getItem("access_token");
+      //     if (!token) window.location.href = "login.html";
+
+      //     function addItem() {
+      //       const div = document.createElement("div");
+      //       div.className = "item";
+      //       div.innerHTML = `
+      //   <input type="text" placeholder="Product Name" class="product" required>
+      //   <input type="number" placeholder="Quantity" class="quantity" required>
+      //   <input type="number" placeholder="Amount" class="amount" required>
+      // `;
+      //       document.getElementById("items").appendChild(div);
+      //     }
+
+      //     document
+      //       .getElementById("invoiceForm")
+      //       .addEventListener("submit", async (e) => {
+      //         e.preventDefault();
+      //         const name = document.getElementById("customer_name").value;
+      //         const phone = document.getElementById("customer_phone").value;
+      //         const items = [...document.querySelectorAll(".item")].map((div) => ({
+      //           product_name: div.querySelector(".product").value,
+      //           quantity: parseInt(div.querySelector(".quantity").value),
+      //           amount: parseFloat(div.querySelector(".amount").value),
+      //         }));
+
+      //         const res = await fetch("http://localhost:8000/invoices/", {
+      //           method: "POST",
+      //           headers: {
+      //             Authorization: "Bearer " + token,
+      //             "Content-Type": "application/json",
+      //           },
+      //           body: JSON.stringify({
+      //             customer_name: name,
+      //             customer_phone: phone,
+      //             items,
+      //           }),
+      //         });
+
+      //         if (res.ok) {
+      //           alert("Invoice created!");
+      //           window.location.href = "invoices.html";
+      //         } else {
+      //           const err = await res.json();
+      //           alert("Failed: " + JSON.stringify(err));
+      //         }
+      //       });
+
+      //     addItem();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login | Invoice System</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+      }
+      form {
+        max-width: 300px;
+        margin: auto;
+        padding: 50px;
+        border: 1px solid #ccc;
+      }
+      input {
+        width: 93%;
+        margin: 5px 0;
+        padding: 8px;
+      }
+      button {
+        width: 100%;
+        padding: 8px;
+        background: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Login</h2>
+    <form id="loginForm">
+      <input type="text" id="username" placeholder="Username" required /><br />
+      <input
+        type="password"
+        id="password"
+        placeholder="Password"
+        required
+      /><br />
+      <button type="submit">Login</button>
+    </form>
+
+    <script>
+      document
+          .getElementById("loginForm")
+          .addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const response = await fetch("http://localhost:8000/api/token/", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username, password }),
+            });
+
+            const data = await response.json();
+            console.log(data)
+            // if (response.ok) {
+            //   localStorage.setItem("access_token", data.access);
+            //   alert("Login successful!");
+            //   window.location.href = "invoices.html";
+            // } else {
+            //   alert("Login failed: " + (data.detail || "Invalid credentials"));
+            // }
+          });
+    </script>
+  </body>
+</html>
